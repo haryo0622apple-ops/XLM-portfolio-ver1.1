@@ -3,22 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stellar Asset Portal - Stardust Edition</title>
+    <title>Stellar Multi-Asset Tracker - Unified</title>
     <style>
         :root {
-            --bg-body: #f0f4f8;
             --primary: #0070f3;
             --success: #00c853;
             --danger: #ff4d4f;
             --edit: #f5a623;
-            --stardust: #7b2ff7; /* Stardust用の特別色 */
-            --text-main: #2c3e50;
-            --text-sub: #7f8c8d;
+            --bg: #f8fafc;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-body);
+            background-color: var(--bg);
             color: var(--text-main);
             margin: 0;
             padding: 20px;
@@ -27,101 +26,121 @@
         .container {
             max-width: 1100px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(12px);
-            border-radius: 24px;
+            background: #ffffff;
+            border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.05);
-            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
         }
 
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #edf2f7;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #f1f5f9;
             padding-bottom: 15px;
         }
 
-        .price-badges { display: flex; gap: 10px; flex-wrap: wrap; }
+        h1 { font-size: 22px; margin: 0; color: var(--text-main); }
+        
+        .price-badges { display: flex; gap: 8px; }
         .badge {
-            background: #fff;
-            padding: 6px 14px;
-            border-radius: 50px;
+            background: #f1f5f9;
+            padding: 6px 12px;
+            border-radius: 8px;
             font-weight: 700;
             font-size: 0.8em;
             color: var(--primary);
-            border: 1px solid #e2e8f0;
         }
 
         .form-group {
             display: grid;
             grid-template-columns: 1fr 2fr auto;
             gap: 12px;
-            margin-bottom: 35px;
-            background: #fff;
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            margin-bottom: 30px;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 12px;
         }
 
-        input { padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 14px; }
-        .btn-add { background: var(--primary); color: white; border: none; border-radius: 10px; padding: 0 25px; font-weight: 700; cursor: pointer; }
+        input {
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        input:focus { outline: none; border-color: var(--primary); }
+
+        .btn-add {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 20px;
+            font-weight: 700;
+            cursor: pointer;
+        }
 
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 12px; color: var(--text-sub); font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; }
-        td { padding: 20px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+        td { padding: 18px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
 
-        .acc-name { font-weight: 800; font-size: 1.1em; display: block; }
-        .acc-addr { font-family: monospace; font-size: 10px; color: var(--text-sub); opacity: 0.7; }
+        .acc-name { font-weight: 700; font-size: 1.05em; display: block; margin-bottom: 4px; }
+        .acc-addr { font-family: monospace; font-size: 10px; color: var(--text-sub); background: #f1f5f9; padding: 2px 4px; border-radius: 4px; }
 
-        .asset-container { display: flex; flex-direction: column; gap: 8px; }
+        .asset-container { display: flex; flex-direction: column; gap: 6px; }
         .asset-card {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: #fff;
-            padding: 10px 15px;
-            border-radius: 10px;
-            border: 1px solid #f1f5f9;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
         }
 
         .asset-code {
-            font-weight: 900;
+            font-weight: 800;
             font-size: 0.75em;
-            padding: 3px 8px;
-            border-radius: 5px;
+            padding: 4px 8px;
+            border-radius: 4px;
             min-width: 65px;
             text-align: center;
-            background: #ebf4ff;
+            background: #eff6ff;
             color: var(--primary);
-        }
-
-        /* STARDUST用の特別バッジスタイル */
-        .asset-code.stardust {
-            background: #f3ebff;
-            color: var(--stardust);
+            border: 1px solid #dbeafe;
         }
 
         .asset-amt { font-family: 'Roboto Mono', monospace; font-weight: 600; font-size: 0.9em; margin-left: 10px; }
-        .asset-jpy { font-weight: 800; color: #4a5568; }
+        .asset-jpy { font-weight: 700; color: var(--text-main); font-size: 0.95em; }
 
         .total-row {
-            margin-top: 12px;
+            margin-top: 10px;
             text-align: right;
-            font-weight: 900;
-            font-size: 1.2em;
+            font-weight: 800;
+            font-size: 1.15em;
             color: var(--success);
         }
 
-        .btn-action { padding: 6px; border: none; border-radius: 6px; color: white; font-size: 10px; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 5px; }
-        
+        .actions { display: flex; flex-direction: column; gap: 4px; }
+        .btn-action {
+            padding: 6px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
         @media (max-width: 768px) {
             .form-group { grid-template-columns: 1fr; }
             th { display: none; }
-            tr { display: block; margin-bottom: 20px; border: 1px solid #eee; border-radius: 15px; padding: 10px; background: #fff; }
-            td { display: block; border: none; padding: 5px; }
+            tr { display: block; margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; background: #fff; }
+            td { display: block; border: none; padding: 8px 0; }
+            .actions { flex-direction: row; }
         }
     </style>
 </head>
@@ -129,7 +148,7 @@
 
 <div class="container">
     <header>
-        <h1>🚀 Stellar Portal</h1>
+        <h1>🚀 Stellar Multi-Asset Tracker</h1>
         <div class="price-badges">
             <div id="xlmPrice" class="badge">XLM: --</div>
             <div id="usdPrice" class="badge">USD/JPY: --</div>
@@ -137,7 +156,7 @@
     </header>
 
     <div class="form-group">
-        <input type="text" id="nameInput" placeholder="名前">
+        <input type="text" id="nameInput" placeholder="名前 (例: 調査用A)">
         <input type="text" id="addrInput" placeholder="アドレス (G...)">
         <button class="btn-add" onclick="addAccount()">追加</button>
     </div>
@@ -145,9 +164,9 @@
     <table>
         <thead>
             <tr>
-                <th style="width: 25%;">Account</th>
-                <th style="width: 60%;">Portfolio</th>
-                <th style="width: 15%;">Manage</th>
+                <th style="width: 25%;">ACCOUNT</th>
+                <th style="width: 60%;">PORTFOLIO</th>
+                <th style="width: 15%;">ACTIONS</th>
             </tr>
         </thead>
         <tbody id="mainList"></tbody>
@@ -155,14 +174,14 @@
 </div>
 
 <script>
-    let accounts = JSON.parse(localStorage.getItem('xlm_stardust_v1')) || [];
+    let accounts = JSON.parse(localStorage.getItem('stellar_unified_v1')) || [];
     let xlmJpy = 0;
     let usdJpy = 0;
 
     window.onload = async () => {
         await fetchPrices();
         render();
-        setInterval(fetchPrices, 300000);
+        setInterval(fetchPrices, 300000); 
     };
 
     async function fetchPrices() {
@@ -174,12 +193,14 @@
             document.getElementById('xlmPrice').innerText = `XLM: ¥${xlmJpy.toLocaleString()}`;
             document.getElementById('usdPrice').innerText = `USD/JPY: ¥${usdJpy.toLocaleString()}`;
             render();
-        } catch (e) { console.error("Price Error"); }
+        } catch (e) { console.error("API Error"); }
     }
 
     async function getRate(code, issuer) {
         try {
-            const res = await fetch(`https://horizon.stellar.org/order_book?selling_asset_type=${code.length > 4 ? 'credit_alphanum12' : 'credit_alphanum4'}&selling_asset_code=${code}&selling_asset_issuer=${issuer}&buying_asset_type=native&limit=1`);
+            // トークン名の長さでタイプを自動判別 (4文字超ならalum12)
+            const type = code.length > 4 ? 'credit_alphanum12' : 'credit_alphanum4';
+            const res = await fetch(`https://horizon.stellar.org/order_book?selling_asset_type=${type}&selling_asset_code=${code}&selling_asset_issuer=${issuer}&buying_asset_type=native&limit=1`);
             const data = await res.json();
             return (data.bids && data.bids.length > 0) ? parseFloat(data.bids[0].price) : 0;
         } catch (e) { return 0; }
@@ -187,9 +208,9 @@
 
     function addAccount() {
         const n = document.getElementById('nameInput'), a = document.getElementById('addrInput');
-        if(!a.value.trim().startsWith('G')) return alert("Gから始まるアドレスを入力してください");
+        if(!a.value.trim().startsWith('G')) return alert("有効なアドレスを！");
         accounts.push({ id: Date.now(), name: n.value || "未設定", addr: a.value.trim() });
-        localStorage.setItem('xlm_stardust_v1', JSON.stringify(accounts));
+        localStorage.setItem('stellar_unified_v1', JSON.stringify(accounts));
         n.value = ''; a.value = '';
         render();
     }
@@ -204,10 +225,12 @@
                     <span class="acc-name">${acc.name}</span>
                     <span class="acc-addr">${acc.addr.substring(0,8)}...${acc.addr.slice(-4)}</span>
                 </td>
-                <td id="assets-${acc.id}"><span style="color:#ccc; font-size:12px;">読み込み中...</span></td>
+                <td id="assets-${acc.id}"><span style="color:#cbd5e1; font-size:12px;">同期中...</span></td>
                 <td>
-                    <button class="btn-action" style="background:var(--edit)" onclick="renameAcc(${acc.id})">変更</button>
-                    <button class="btn-action" style="background:var(--danger)" onclick="removeAcc(${acc.id})">削除</button>
+                    <div class="actions">
+                        <button class="btn-action" style="background:var(--edit)" onclick="renameAcc(${acc.id})">名変</button>
+                        <button class="btn-action" style="background:var(--danger)" onclick="removeAcc(${acc.id})">削除</button>
+                    </div>
                 </td>
             `;
             list.appendChild(tr);
@@ -248,17 +271,14 @@
                 const asset = combined[code];
                 total += asset.jpy;
                 
-                // 表示条件: XLM, USDC, STARDUST(SDUST)は必ず表示、それ以外は0.1円以上の価値があるもの
+                // 特定トークンまたは一定以上の価値があるものを表示
                 if (asset.jpy < 0.1 && !['XLM', 'USDC', 'STARDUST', 'SDUST'].includes(code)) continue;
 
                 const div = document.createElement('div');
                 div.className = 'asset-card';
-                // STARDUST系ならクラスを追加して色を変える
-                const specialClass = (code === 'STARDUST' || code === 'SDUST') ? 'stardust' : '';
-                
                 div.innerHTML = `
                     <div style="display:flex; align-items:center;">
-                        <span class="asset-code ${specialClass}">${code}</span>
+                        <span class="asset-code">${code}</span>
                         <span class="asset-amt">${asset.amt.toLocaleString()}</span>
                     </div>
                     <span class="asset-jpy">¥${Math.round(asset.jpy).toLocaleString()}</span>
@@ -266,20 +286,19 @@
                 wrapper.appendChild(div);
             }
             container.appendChild(wrapper);
-            container.innerHTML += `<div class="total-row">合計: ¥${Math.round(total).toLocaleString()}</div>`;
-
-        } catch (e) { document.getElementById(`assets-${acc.id}`).innerText = "エラー"; }
+            container.innerHTML += `<div class="total-row">Total: ¥${Math.round(total).toLocaleString()}</div>`;
+        } catch (e) { document.getElementById(`assets-${acc.id}`).innerText = "ERROR"; }
     }
 
     window.renameAcc = (id) => {
         const acc = accounts.find(x => x.id === id);
-        const n = prompt("名前:", acc.name);
-        if(n) { acc.name = n; localStorage.setItem('xlm_stardust_v1', JSON.stringify(accounts)); render(); }
+        const n = prompt("名前変更", acc.name);
+        if(n) { acc.name = n; localStorage.setItem('stellar_unified_v1', JSON.stringify(accounts)); render(); }
     };
     window.removeAcc = (id) => {
         if(confirm("削除しますか？")) {
             accounts = accounts.filter(x => x.id !== id);
-            localStorage.setItem('xlm_stardust_v1', JSON.stringify(accounts));
+            localStorage.setItem('stellar_unified_v1', JSON.stringify(accounts));
             render();
         }
     };
