@@ -3,49 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stellar Auto-Price Tracker</title>
+    <title>Stellar No-API Tracker</title>
     <style>
-        :root { --primary: #0070f3; --success: #00c853; --dark: #2c3e50; }
-        body { font-family: sans-serif; background: #f0f4f8; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 15px; shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        :root { --primary: #0070f3; --success: #00c853; }
+        body { font-family: sans-serif; background: #f4f7f9; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         header { border-bottom: 2px solid #eee; margin-bottom: 20px; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .price-badge { background: #eef2f7; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9em; }
-        
+        .price-badge { background: #eef2f7; padding: 8px 15px; border-radius: 20px; font-weight: bold; border: 1px solid #ddd; }
         .form-section { display: flex; gap: 10px; margin-bottom: 25px; }
         input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
         button { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; background: var(--primary); color: white; }
-
         table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 12px; background: #fafafa; border-bottom: 2px solid #eee; font-size: 12px; color: #666; }
+        th { text-align: left; padding: 12px; background: #fafafa; border-bottom: 2px solid #eee; font-size: 12px; }
         td { padding: 15px; border-bottom: 1px solid #eee; vertical-align: top; }
-
         .asset-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #eee; font-size: 0.9em; }
-        .asset-code { font-weight: bold; color: var(--primary); width: 60px; }
-        .jpy-val { font-weight: bold; color: #444; }
+        .asset-code { font-weight: bold; color: var(--primary); }
         .total-box { margin-top: 10px; text-align: right; color: var(--success); font-weight: bold; font-size: 1.2em; }
-        .loading-text { color: #aaa; font-style: italic; font-size: 0.8em; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>🚀 Stellar 全自動資産査定</h1>
-        <div id="xlmPrice" class="price-badge">XLM: 読み込み中...</div>
+        <h1>🚀 Stellar 資産管理</h1>
+        <div id="xlmPrice" class="price-badge">計算中...</div>
     </header>
 
     <div class="form-section">
-        <input type="text" id="labelInput" placeholder="ラベル名">
-        <input type="text" id="addrInput" placeholder="Stellarアドレス (G...)">
-        <button onclick="addAddr()">追加</button>
+        <input type="text" id="labelInput" placeholder="名前">
+        <input type="text" id="addrInput" placeholder="アドレス G...">
+        <button id="addBtn">追加</button>
     </div>
 
-    <table>
+    <table id="mainTable">
         <thead>
             <tr>
                 <th style="width: 20%;">ラベル</th>
-                <th style="width: 55%;">保有資産 (自動換算済)</th>
-                <th style="width: 25%;">操作</th>
+                <th style="width: 60%;">保有資産 (円換算)</th>
+                <th style="width: 20%;">操作</th>
             </tr>
         </thead>
         <tbody id="listBody"></tbody>
@@ -53,57 +48,24 @@
 </div>
 
 <script>
-    let watchList = JSON.parse(localStorage.getItem('stellar_auto_v1')) || [];
-    let xlmJpy = 0;
+    let watchList = JSON.parse(localStorage.getItem('stellar_noapi_v1')) || [];
+    let xlmJpy = 22; // 初期値（取得失敗時のバックアップ）
+    const USD_JPY_RATE = 150; // 1ドル＝150円固定（APIなしの限界）
+
+    window.onload = function() {
+        init();
+        document.getElementById('addBtn').onclick = addAddr;
+    };
 
     async function init() {
-        await fetchXLMPrice();
+        await calcXLMPriceFromDEX();
         render();
-        setInterval(fetchXLMPrice, 300000); 
+        setInterval(calcXLMPriceFromDEX, 60000); // 1分ごとに更新
     }
 
-    async function fetchXLMPrice() {
+    // ★APIキーなしで価格を出す魔法：USDCの注文板からXLM価格を逆算する
+    async function calcXLMPriceFromDEX() {
         try {
-            const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=stellar&vs_currencies=jpy');
-            const data = await res.json();
-            xlmJpy = data.stellar.jpy;
-            document.getElementById('xlmPrice').innerText = `1 XLM = ¥${xlmJpy.toLocaleString()}`;
-            render();
-        } catch (e) { console.error("Price error"); }
-    }
-
-    // ★重要: 各通貨の対XLM価格をDEXから取得する関数
-    async function getAssetPriceInXLM(code, issuer) {
-        if (!code || !issuer) return 0;
-        try {
-            // Stellar DEXの注文板を参照して、1トークンが何XLMかを取得
-            const url = `https://horizon.stellar.org/order_book?selling_asset_type=credit_alphanum4&selling_asset_code=${code}&selling_asset_issuer=${issuer}&buying_asset_type=native&limit=1`;
-            const res = await fetch(url);
-            const data = await res.json();
-            if (data.bids && data.bids.length > 0) {
-                return parseFloat(data.bids[0].price); // 最良気配値を返す
-            }
-            return 0;
-        } catch (e) { return 0; }
-    }
-
-    function addAddr() {
-        const l = document.getElementById('labelInput').value || "無題";
-        const a = document.getElementById('addrInput').value.trim();
-        if(!a.startsWith('G')) return;
-        watchList.push({ id: Date.now(), name: l, address: a });
-        localStorage.setItem('stellar_auto_v1', JSON.stringify(watchList));
-        render();
-    }
-
-    function render() {
-        const body = document.getElementById('listBody');
-        body.innerHTML = '';
-        watchList.forEach(item => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong>${item.name}</strong><br><small style="color:#999; font-size:9px;">${item.address.substring(0,15)}...</small></td>
-                <td id="assets-${item.id}"><span class="loading-text">計算中...</span></td>
-                <td>
-                    <button style="background:#ffc107; color:black; padding:5px 10px;" onclick="rename(${item.id})">名変</button>
-                    <button style="background:#dc3545; padding:5px 10px;" onclick="remove(${item.id})">削除</button>
+            // Centre公式のUSDC発行体
+            const usdcIssuer = 'GA5ZSEJYB37JRC5JC3643M6T6ZVPZ6S6X7Q5C4SU7E3I72Y5T2TNDPZ6';
+            const url = `
