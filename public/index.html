@@ -2,62 +2,82 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stellar Tracker - JPY Sorted</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stellar Tracker - Mobile Optimized</title>
     <style>
         :root {
             --primary: #0070f3; --success: #00c853; --danger: #ff4d4f; --edit: #f5a623;
-            --bg: #f8fafc; --text: #1e293b; --sub: #64748b;
+            --bg: #f0f2f5; --text: #1e293b; --sub: #64748b;
         }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: 0 auto; background: #fff; border-radius: 20px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; }
-        h1 { font-size: 22px; margin: 0; }
-        .badge-group { display: flex; gap: 8px; }
-        .badge { background: #f1f5f9; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.8em; color: var(--primary); border: 1px solid #e2e8f0; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        .form-group { display: grid; grid-template-columns: 1fr 2fr auto; gap: 10px; margin-bottom: 30px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; }
-        input { padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; }
-        input:focus { outline: none; border-color: var(--primary); }
-        .btn-add { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 0 25px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .btn-add:hover { opacity: 0.9; }
-
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 12px; color: var(--sub); font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; letter-spacing: 1px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
         
-        /* ソート時のアニメーションを滑らかに */
-        #mainList tr { transition: all 0.5s ease; }
-        td { padding: 18px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+        .container { max-width: 800px; margin: 0 auto; }
 
-        .acc-name { font-weight: 700; font-size: 1.05em; display: block; margin-bottom: 4px; color: var(--text); }
-        .acc-addr { font-family: monospace; font-size: 10px; color: var(--sub); background: #f1f5f9; padding: 2px 6px; border-radius: 4px; }
+        header { 
+            display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; 
+            background: #fff; padding: 20px; border-radius: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        h1 { font-size: 20px; margin: 0; text-align: center; }
+        .badge-group { display: flex; justify-content: center; gap: 8px; }
+        .badge { background: #eff6ff; padding: 8px 12px; border-radius: 10px; font-weight: 700; font-size: 0.85em; color: var(--primary); border: 1px solid #dbeafe; }
 
-        .asset-container { display: flex; flex-direction: column; gap: 6px; }
+        /* 入力エリアのスマホ最適化 */
+        .form-group { 
+            display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; 
+            background: #fff; padding: 20px; border-radius: 18px; border: 1px solid #e2e8f0;
+        }
+        input { 
+            width: 100%; padding: 15px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 16px; /* 16px以上にするとiPhoneでズームしない */
+            background: #f8fafc;
+        }
+        .btn-add { 
+            background: var(--primary); color: white; border: none; border-radius: 12px; 
+            padding: 15px; font-weight: 800; font-size: 16px; cursor: pointer; transition: 0.2s;
+        }
+
+        /* テーブルをスマホではカード形式に */
+        table, thead, tbody, th, td, tr { display: block; width: 100%; }
+        thead { display: none; } /* 見出しは隠す */
+        
+        tr { 
+            background: #fff; border-radius: 20px; padding: 20px; margin-bottom: 20px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
+            transition: transform 0.4s ease;
+        }
+
+        .acc-header { display: flex; flex-direction: column; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+        .acc-name { font-weight: 800; font-size: 1.2em; color: var(--primary); }
+        .acc-addr { font-family: monospace; font-size: 12px; color: var(--sub); word-break: break-all; margin-top: 4px; }
+
+        .asset-container { display: flex; flex-direction: column; gap: 8px; margin: 15px 0; }
         .asset-card {
             display: flex; justify-content: space-between; align-items: center;
-            background: #fff; padding: 8px 12px; border-radius: 8px; border: 1px solid #e2e8f0;
+            background: #f8fafc; padding: 12px 15px; border-radius: 12px; border: 1px solid #edf2f7;
         }
-        .asset-code {
-            font-weight: 800; font-size: 0.75em; padding: 4px 8px; border-radius: 4px;
-            min-width: 65px; text-align: center; background: #eff6ff; color: var(--primary); border: 1px solid #dbeafe;
+        .asset-code { font-weight: 900; font-size: 0.8em; color: var(--primary); }
+        .asset-amt { font-family: 'Roboto Mono', monospace; font-weight: 600; font-size: 1em; margin-left: 10px; }
+        .asset-jpy { font-weight: 800; color: var(--text); font-size: 1em; }
+
+        .total-row { 
+            text-align: right; font-weight: 900; color: var(--success); font-size: 1.3em; 
+            margin-top: 15px; padding-top: 10px; border-top: 2px dashed #e2e8f0;
         }
-        .asset-amt { font-family: 'Roboto Mono', monospace; font-weight: 600; font-size: 0.9em; margin-left: 10px; }
-        .asset-jpy { font-weight: 700; color: var(--text); font-size: 0.95em; }
 
-        .total-row { text-align: right; font-weight: 800; color: var(--success); font-size: 1.1em; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #e2e8f0; }
+        /* 操作ボタンを大きく横並びに */
+        .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn-action { 
+            padding: 14px; border: none; border-radius: 12px; color: white; 
+            font-size: 14px; font-weight: 800; cursor: pointer; text-align: center;
+        }
 
-        .actions { display: flex; flex-direction: column; gap: 5px; }
-        .btn-action { padding: 6px; border: none; border-radius: 6px; color: white; font-size: 10px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .btn-action:hover { filter: brightness(0.9); }
-
-        @media (max-width: 768px) {
-            .form-group { grid-template-columns: 1fr; }
-            th { display: none; }
-            tr { display: block; margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; background: #fff; }
-            td { display: block; border: none; padding: 8px 0; }
-            .actions { flex-direction: row; gap: 10px; }
-            .btn-action { flex: 1; padding: 10px; }
+        @media (min-width: 769px) {
+            /* PCでは少しスリムに */
+            .form-group { flex-direction: row; }
+            .btn-add { width: auto; }
+            .actions { grid-template-columns: 80px 80px; justify-content: flex-end; }
         }
     </style>
 </head>
@@ -65,7 +85,7 @@
 
 <div class="container">
     <header>
-        <h1>🚀 Stellar　資産管理</h1>
+        <h1>🚀 Stellar 資産管理</h1>
         <div class="badge-group">
             <div id="xlmPrice" class="badge">XLM: --</div>
             <div id="usdPrice" class="badge">USD/JPY: --</div>
@@ -73,33 +93,24 @@
     </header>
 
     <div class="form-group">
-        <input type="text" id="nameInput" placeholder="名前">
-        <input type="text" id="addrInput" placeholder="アドレス (G...)">
-        <button class="btn-add" onclick="addAccount()">追加</button>
+        <input type="text" id="nameInput" placeholder="アカウント名 (例: お財布)" autocomplete="off">
+        <input type="text" id="addrInput" placeholder="アドレス (G...)" autocomplete="off">
+        <button class="btn-add" onclick="addAccount()">アカウントを追加する</button>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 25%;">ACCOUNT</th>
-                <th style="width: 60%;">PORTFOLIO</th>
-                <th style="width: 15%;">ACTIONS</th>
-            </tr>
-        </thead>
-        <tbody id="mainList"></tbody>
-    </table>
+    <div id="mainList">
+        </div>
 </div>
 
 <script>
-    let accounts = JSON.parse(localStorage.getItem('stellar_jpy_sort_v1')) || [];
+    let accounts = JSON.parse(localStorage.getItem('stellar_mobile_v1')) || [];
     let xlmJpy = 0;
     let usdJpy = 0;
-    let accountTotals = {}; // 日本円換算額を一時保存するオブジェクト
+    let accountTotals = {};
 
     window.onload = async () => {
         await fetchPrices();
-        render();
-        setInterval(fetchPrices, 300000); // 5分更新
+        setInterval(fetchPrices, 300000);
     };
 
     async function fetchPrices() {
@@ -111,7 +122,7 @@
             document.getElementById('xlmPrice').innerText = `XLM: ¥${xlmJpy.toLocaleString()}`;
             document.getElementById('usdPrice').innerText = `USD/JPY: ¥${usdJpy.toLocaleString()}`;
             render(); 
-        } catch (e) { console.error("価格取得に失敗しました"); }
+        } catch (e) { console.error("Error fetching prices"); }
     }
 
     async function getRate(code, issuer) {
@@ -127,7 +138,7 @@
         const n = document.getElementById('nameInput'), a = document.getElementById('addrInput');
         if(!a.value.trim().startsWith('G')) return alert("有効なアドレスを入力してください");
         accounts.push({ id: Date.now(), name: n.value || "未設定", addr: a.value.trim() });
-        localStorage.setItem('stellar_jpy_sort_v1', JSON.stringify(accounts));
+        localStorage.setItem('stellar_mobile_v1', JSON.stringify(accounts));
         n.value = ''; a.value = '';
         render();
     }
@@ -136,22 +147,20 @@
         const list = document.getElementById('mainList');
         list.innerHTML = '';
         accounts.forEach(acc => {
-            const tr = document.createElement('tr');
-            tr.id = `row-${acc.id}`;
-            tr.innerHTML = `
-                <td>
+            const div = document.createElement('tr'); // 構造維持のため tr タグを使用
+            div.id = `row-${acc.id}`;
+            div.innerHTML = `
+                <div class="acc-header">
                     <span class="acc-name">${acc.name}</span>
-                    <span class="acc-addr">${acc.addr.substring(0,8)}...${acc.addr.slice(-4)}</span>
-                </td>
-                <td id="assets-${acc.id}"><span style="color:#cbd5e1; font-size:12px;">JPY換算中...</span></td>
-                <td>
-                    <div class="actions">
-                        <button class="btn-action" style="background:var(--edit)" onclick="renameAcc(${acc.id})">変更</button>
-                        <button class="btn-action" style="background:var(--danger)" onclick="removeAcc(${acc.id})">削除</button>
-                    </div>
-                </td>
+                    <span class="acc-addr">${acc.addr}</span>
+                </div>
+                <div id="assets-${acc.id}"><span style="color:#cbd5e1; font-size:14px;">計算中...</span></div>
+                <div class="actions">
+                    <button class="btn-action" style="background:var(--edit)" onclick="renameAcc(${acc.id})">名前変更</button>
+                    <button class="btn-action" style="background:var(--danger)" onclick="removeAcc(${acc.id})">削除</button>
+                </div>
             `;
-            list.appendChild(tr);
+            list.appendChild(div);
             loadAssets(acc);
         });
     }
@@ -182,13 +191,11 @@
             for (const code in combined) {
                 const asset = combined[code];
                 accountTotalJpy += asset.jpy;
-                
-                // 重要トークンまたは0.1円以上の価値があるものを表示
                 if (asset.jpy < 0.1 && !['XLM', 'USDC', 'STARDUST', 'SDUST'].includes(code)) continue;
 
                 wrapper.innerHTML += `
                     <div class="asset-card">
-                        <div style="display:flex; align-items:center;">
+                        <div>
                             <span class="asset-code">${code}</span>
                             <span class="asset-amt">${asset.amt.toLocaleString()}</span>
                         </div>
@@ -197,9 +204,8 @@
                 `;
             }
             container.appendChild(wrapper);
-            container.innerHTML += `<div class="total-row">Total: ¥${Math.round(accountTotalJpy).toLocaleString()}</div>`;
+            container.innerHTML += `<div class="total-row">合計: ¥${Math.round(accountTotalJpy).toLocaleString()}</div>`;
             
-            // 重要：日本円の合計額を保存して、リストをソート
             accountTotals[acc.id] = accountTotalJpy;
             sortRowsByJpy();
 
@@ -209,29 +215,24 @@
     function sortRowsByJpy() {
         const list = document.getElementById('mainList');
         const rows = Array.from(list.querySelectorAll('tr'));
-        
         rows.sort((a, b) => {
             const idA = a.id.replace('row-', '');
             const idB = b.id.replace('row-', '');
-            const valA = accountTotals[idA] || 0;
-            const valB = accountTotals[idB] || 0;
-            return valA - valB; // 昇順（低い順）
+            return (accountTotals[idA] || 0) - (accountTotals[idB] || 0);
         });
-        
-        // 並び替えた順序でDOMを再配置
         rows.forEach(row => list.appendChild(row));
     }
 
     window.renameAcc = (id) => {
         const acc = accounts.find(x => x.id === id);
         const n = prompt("新しい名前:", acc.name);
-        if(n) { acc.name = n; localStorage.setItem('stellar_jpy_sort_v1', JSON.stringify(accounts)); render(); }
+        if(n) { acc.name = n; localStorage.setItem('stellar_mobile_v1', JSON.stringify(accounts)); render(); }
     };
     window.removeAcc = (id) => {
-        if(confirm("このアカウントを削除しますか？")) {
+        if(confirm("削除しますか？")) {
             accounts = accounts.filter(x => x.id !== id);
             delete accountTotals[id];
-            localStorage.setItem('stellar_jpy_sort_v1', JSON.stringify(accounts));
+            localStorage.setItem('stellar_mobile_v1', JSON.stringify(accounts));
             render();
         }
     };
