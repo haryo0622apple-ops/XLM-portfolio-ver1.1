@@ -38,7 +38,7 @@
     </h1>
 
     <div class="form-group">
-        <input type="text" id="nameInput" placeholder="ラベル (例: 調査A)">
+        <input type="text" id="nameInput" placeholder="名前">
         <input type="text" id="addrInput" placeholder="Stellarアドレス (G...)">
         <button class="btn-add" onclick="addEntry()">追加</button>
     </div>
@@ -122,7 +122,7 @@
                 <td><small style="color:#999; word-break:break-all;">${acc.address.substring(0,12)}...</small></td>
                 <td id="assets-${acc.id}"><span style="color:#ccc">データ取得中...</span></td>
                 <td>
-                    <button class="btn-edit" onclick="rename(${acc.id})">名変</button>
+                    <button class="btn-edit" onclick="rename(${acc.id})">名前変更</button>
                     <button class="btn-delete" onclick="remove(${acc.id})">削除</button>
                 </td>
             `;
