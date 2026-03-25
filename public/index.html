@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XLM Address Manager</title>
+    <style>
+        :root { --primary: #0070f3; --danger: #ff4d4d; --edit: #f5a623; }
+        body { font-family: -apple-system, sans-serif; background: #fafafa; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        h1 { color: #333; font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        .form-group { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; margin-bottom: 30px; }
+        input { padding: 12px; border: 1px solid #ddd; border-radius: 6px; outline: none; transition: border 0.2s; }
+        input:focus { border-color: var(--primary); }
+        
+        button { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: opacity 0.2s; }
+        button:hover { opacity: 0.8; }
+        .btn-add { background: var(--primary); color: white; }
+        .btn-edit { background: var(--edit); color: white; margin-right: 5px; }
+        .btn-delete { background: var(--danger); color: white; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; padding: 15px; border-bottom: 2px solid #eee; color: #666; }
+        td { padding: 15px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        
+        .address-text { font-family: monospace; color: #888; font-size: 0.9em; }
+        .balance-val { font-weight: bold; font-size: 1.1em; color: #2ecc71; }
+        .loading { color: #aaa; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🚀 XLM ウォッチリスト</h1>
+
+    <div class="form-group">
+        <input type="text" id="nameInput" placeholder="ラベル名 (例: GitHubで見つけた)">
+        <input type="text" id="addrInput" placeholder="Stellarアドレス (G...)">
+        <button class="btn-add" onclick="addEntry()">追加保存</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ラベル名</th>
+                <th>アドレス</th>
+                <th>残高 (XLM)</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="listBody">
+            </tbody>
+    </table>
+</div>
+
+<script>
+    // ローカルストレージからデータを読み込む
+    let accounts = JSON.parse(localStorage.getItem('xlm_data')) || [];
+
+    // 起動時に表示
+    render();
+
+    // 1. 追加・保存機能
+    function addEntry() {
+        const nameField = document.getElementById('nameInput');
+        const addrField = document.getElementById('addrInput');
+        
+        if (!addrField.value.startsWith('G')) {
+            alert("有効なStellarアドレスを入力してください");
+            return;
+        }
+
+        const newAccount = {
+            id: Date.now(),
+            name: nameField.value || "名称未設定",
+            address: addrField.value.trim()
+        };
+
+        accounts.push(newAccount);
+        save();
+        nameField.value = '';
+        addrField.value = '';
+    }
+
+    // 2. 名前変更機能
+    function rename(id) {
+        const acc = accounts.find(a => a.id === id);
+        const newName = prompt("新しい名前を入力してください", acc.name);
+        if (newName !== null) {
+            acc.name = newName;
+            save();
+        }
+    }
+
+    // 3. 削除機能（確認ダイアログ付き）
+    function remove(id) {
+        if (confirm("本当にこのアドレスを削除しますか？")) {
+            accounts = accounts.filter(a => a.id !== id);
+            save();
+        }
+    }
+
+    // 4. データ保存と描画リフレッシュ
+    function save() {
+        localStorage.setItem('xlm_data', JSON.stringify(accounts));
+        render();
+    }
+
+    // 5. リスト表示と残高取得
+    function render() {
+        const body = document.getElementById('listBody');
+        body.innerHTML = '';
+
+        accounts.forEach(acc => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${acc.name}</strong></td>
+                <td><span class="address-text">${acc.address.substring(0,6)}...${acc.address.substring(50)}</span></td>
+                <td><span id="bal-${acc.id}" class="loading">読込中...</span></td>
+                <td>
+                    <button class="btn-edit" onclick="rename(${acc.id})">変更</button>
+                    <button class="btn-delete" onclick="remove(${acc.id})">削除</button>
+                </td>
+            `;
+            body.appendChild(tr);
+            updateBalance(acc.address, acc.id);
+        });
+    }
+
+    // 6. Stellar Horizon APIから残高を取得する
+    async function updateBalance(address, id) {
+        try {
+            const res = await fetch(`https://horizon.stellar.org/accounts/${address}`);
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            const native = data.balances.find(b => b.asset_type === 'native');
+            const amount = parseFloat(native.balance).toLocaleString(undefined, {minimumFractionDigits: 2});
+            document.getElementById(`bal-${id}`).innerHTML = `<span class="balance-val">${amount}</span> XLM`;
+        } catch (err) {
+            document.getElementById(`bal-${id}`).innerText = "取得失敗";
+        }
+    }
+</script>
+
+</body>
+</html>
