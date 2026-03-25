@@ -3,279 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stellar Multi-Asset Tracker - Pro</title>
+    <title>Stellar Multi-Asset Tracker</title>
     <style>
-        /* 1. モダンな配色とフォントの設定 */
-        :root {
-            --bg-body: #f4f7f9;
-            --primary: #0070f3; /* 信頼のブルー */
-            --success: #00c853; /* 成功のグリーン */
-            --danger: #ff4d4f; /* 警告のレッド */
-            --text-main: #333;
-            --text-sub: #888;
-            --glass-bg: rgba(255, 255, 255, 0.8);
-            --glass-border: rgba(255, 255, 255, 0.5);
-        }
+        :root { --primary: #0070f3; --danger: #ff4d4d; --edit: #f5a623; --jpy: #2c3e50; }
+        body { font-family: -apple-system, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        h1 { color: #333; font-size: 22px; border-bottom: 2px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; }
+        .price-tag { font-size: 0.6em; color: #666; font-weight: normal; }
+        
+        .form-group { display: grid; grid-template-columns: 1fr 1.5fr auto; gap: 10px; margin-bottom: 30px; background: #f8f9fa; padding: 15px; border-radius: 8px; }
+        input { padding: 12px; border: 1px solid #ddd; border-radius: 6px; }
+        
+        button { padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-add { background: var(--primary); color: white; }
+        .btn-edit { background: var(--edit); color: white; font-size: 12px; }
+        .btn-delete { background: var(--danger); color: white; font-size: 12px; }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            margin: 0;
-            padding: 20px;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* 2. ガラスモーフィズムのコンテナ */
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px); /* 背景をぼかす */
-            border: 1px solid var(--glass-border);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #eee;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
-        }
-
-        h1 {
-            font-size: 24px;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .xlm-badge {
-            background: rgba(0, 112, 243, 0.1);
-            color: var(--primary);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 0.9em;
-            letter-spacing: 1px;
-        }
-
-        /* 3. おしゃれな入力フォーム */
-        .form-group {
-            display: grid;
-            grid-template-columns: 1fr 1.5fr auto;
-            gap: 15px;
-            margin-bottom: 35px;
-            background: #fff;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-            border: 1px solid #eee;
-        }
-
-        input {
-            padding: 14px;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            font-size: 15px;
-            transition: 0.3s;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
-        }
-
-        button {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.3s;
-            font-size: 14px;
-        }
-
-        .btn-add {
-            background: var(--primary);
-            color: white;
-            padding: 0 25px;
-        }
-
-        .btn-add:hover {
-            background: #0056b3;
-            transform: translateY(-2px); /* 浮き上がるアニメーション */
-        }
-
-        /* 4. 洗練されたリストデザイン */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th {
-            text-align: left;
-            padding: 15px;
-            background: transparent;
-            border-bottom: 2px solid #eee;
-            font-size: 12px;
-            color: var(--text-sub);
-            text-transform: uppercase; /* 大文字でプロっぽく */
-            letter-spacing: 1px;
-        }
-
-        td {
-            padding: 20px 15px;
-            border-bottom: 1px solid #eee;
-            vertical-align: top;
-        }
-
-        /* アドレスのラベル */
-        .acc-name {
-            font-weight: bold;
-            font-size: 1.1em;
-            color: var(--primary);
-        }
-
-        .acc-addr {
-            color: var(--text-sub);
-            font-family: monospace;
-            font-size: 11px;
-            background: #f4f7f9;
-            padding: 3px 6px;
-            border-radius: 4px;
-            word-break: break-all;
-        }
-
-        /* 資産アイテムの統合デザイン */
-        .asset-list-container {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .asset-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #fff;
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: 1px solid #f0f0f0;
-            transition: 0.2s;
-        }
-
-        .asset-item:hover {
-            border-color: #eee;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-        }
-
-        .asset-code-amt {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .asset-code {
-            font-weight: 800;
-            color: var(--primary);
-            font-size: 0.85em;
-            letter-spacing: 1.5px;
-            background: rgba(0, 112, 243, 0.1);
-            padding: 4px 8px;
-            border-radius: 4px;
-            width: 70px;
-            text-align: center;
-        }
-
-        .asset-amt {
-            font-family: monospace;
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        .jpy-val {
-            font-weight: bold;
-            color: #444;
-            min-width: 100px;
-            text-align: right;
-            font-size: 1.1em;
-        }
-
-        /* 合計評価額の特別デザイン */
-        .total-box {
-            font-weight: 900;
-            color: var(--success);
-            margin-top: 15px;
-            border-top: 2px solid #eee;
-            padding-top: 12px;
-            text-align: right;
-            font-size: 1.3em;
-            letter-spacing: 1px;
-        }
-
-        /* 管理ボタンをスマートに */
-        .action-btns {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .btn-sm {
-            padding: 6px;
-            font-size: 11px;
-            border: none;
-            border-radius: 6px;
-            color: white;
-            font-weight: bold;
-            opacity: 0.7;
-            transition: 0.2s;
-        }
-
-        .btn-sm:hover {
-            opacity: 1;
-        }
-
-        /* 5. レスポンシブ対応 */
-        @media (max-width: 768px) {
-            .container { padding: 20px; }
-            .form-group { grid-template-columns: 1fr; }
-            th { display: none; }
-            tr { display: block; border-bottom: 2px solid #eee; margin-bottom: 20px; }
-            td { display: block; padding: 10px 0; border: none; }
-            .asset-item { flex-direction: column; align-items: flex-start; gap: 5px; }
-            .jpy-val { text-align: left; min-width: auto; }
-            .total-box { text-align: left; }
-            .action-btns { flex-direction: row; }
-        }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 12px; border-bottom: 2px solid #eee; background: #fafafa; }
+        td { padding: 15px; border-bottom: 1px solid #eee; vertical-align: top; }
+        
+        .asset-list { list-style: none; padding: 0; margin: 0; }
+        .asset-item { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 0.95em; }
+        .asset-code { font-weight: bold; color: #444; width: 60px; }
+        .jpy-val { color: #888; font-size: 0.85em; margin-left: 10px; }
+        .total-jpy { font-weight: bold; color: var(--jpy); margin-top: 5px; border-top: 1px dashed #ccc; padding-top: 5px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header>
-        <h1>🚀 Stellar Multi-Asset Tracker</h1>
-        <div id="xlmPriceDisplay" class="xlm-badge">LOADING...</div>
-    </header>
+    <h1>
+        🚀 Stellar 資産管理ポータル
+        <span id="xlmPrice" class="price-tag">XLM価格取得中...</span>
+    </h1>
 
     <div class="form-group">
-        <input type="text" id="nameIn" placeholder="名前">
-        <input type="text" id="addrIn" placeholder="Stellarアドレス (G...)">
-        <button class="btn-add" onclick="addNew()">追加</button>
+        <input type="text" id="nameInput" placeholder="ラベル（名前）">
+        <input type="text" id="addrInput" placeholder="Stellarアドレス (G...)">
+        <button class="btn-add" onclick="addEntry()">追加</button>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th style="width: 20%;">LABEL / ADDRESS</th>
-                <th style="width: 65%;">BALANCES / VALUE</th>
-                <th style="width: 15%;">ADMIN</th>
+                <th style="width: 20%;">名前</th>
+                <th style="width: 25%;">アドレス</th>
+                <th style="width: 35%;">保有通貨 (残高 > 0)</th>
+                <th style="width: 20%;">操作</th>
             </tr>
         </thead>
         <tbody id="listBody"></tbody>
@@ -283,126 +58,129 @@
 </div>
 
 <script>
-    // キー名を新しくして過去のデータをリセット
-    let accounts = JSON.parse(localStorage.getItem('xlm_pro_data')) || [];
-    let xlmJpy = 0;
+    let accounts = JSON.parse(localStorage.getItem('xlm_v2_data')) || [];
+    let xlmToJpy = 0;
 
-    window.onload = async () => {
-        await updateXlmPrice();
+    // 最初に価格を取得してから描画
+    init();
+
+    async function init() {
+        await fetchXLMPrice();
         render();
-        setInterval(updateXlmPrice, 300000); // 5分更新
-    };
+        // 5分ごとに価格更新
+        setInterval(fetchXLMPrice, 300000);
+    }
 
-    async function updateXlmPrice() {
+    async function fetchXLMPrice() {
         try {
+            // CoinGecko APIを使用してXLMの日本円価格を取得
             const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=stellar&vs_currencies=jpy');
             const data = await res.json();
-            xlmJpy = data.stellar.jpy;
-            document.getElementById('xlmPriceDisplay').innerText = `1 XLM = ¥${xlmJpy.toLocaleString()}`;
-            render();
-        } catch (e) { document.getElementById('xlmPriceDisplay').innerText = "ERROR"; if(xlmJpy === 0) xlmJpy = 28; }
+            xlmToJpy = data.stellar.jpy;
+            document.getElementById('xlmPrice').innerText = `1 XLM = ¥${xlmToJpy.toLocaleString()}`;
+        } catch (e) {
+            document.getElementById('xlmPrice').innerText = "価格取得エラー";
+        }
     }
 
-    async function getDexRate(code, issuer) {
-        try {
-            const res = await fetch(`https://horizon.stellar.org/order_book?selling_asset_type=credit_alphanum4&selling_asset_code=${code}&selling_asset_issuer=${issuer}&buying_asset_type=native&limit=1`);
-            const data = await res.json();
-            return (data.bids && data.bids.length > 0) ? parseFloat(data.bids[0].price) : 0;
-        } catch (e) { return 0; }
+    function addEntry() {
+        const nameField = document.getElementById('nameInput');
+        const addrField = document.getElementById('addrInput');
+        if (!addrField.value.startsWith('G')) return alert("有効なアドレスを！");
+
+        accounts.push({ id: Date.now(), name: nameField.value || "未設定", address: addrField.value.trim() });
+        save();
+        nameField.value = ''; addrField.value = '';
     }
 
-    function addNew() {
-        const n = document.getElementById('nameIn'), a = document.getElementById('addrIn');
-        if(!a.value.trim().startsWith('G') || a.value.length < 50) return alert("有効なStellarアドレスを入力してください");
-        accounts.push({ id: Date.now(), name: n.value || "未設定", addr: a.value.trim() });
-        localStorage.setItem('xlm_pro_data', JSON.stringify(accounts));
-        n.value = ''; a.value = '';
+    function save() {
+        localStorage.setItem('xlm_v2_data', JSON.stringify(accounts));
         render();
     }
 
     function render() {
         const body = document.getElementById('listBody');
         body.innerHTML = '';
+
         accounts.forEach(acc => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
+                <td><strong>${acc.name}</strong></td>
+                <td><small style="color:#999; word-break:break-all;">${acc.address}</small></td>
+                <td id="assets-${acc.id}"><span style="color:#ccc">取得中...</span></td>
                 <td>
-                    <div class="acc-name">${acc.name}</div>
-                    <div class="acc-addr">${acc.addr.substring(0,10)}...</div>
-                </td>
-                <td id="assets-${acc.id}"><span style="color:#ccc; font-style:italic; font-size:12px">取得中...</span></td>
-                <td class="action-btns">
-                    <button class="btn-sm" style="background:var(--edit)" onclick="rename(${acc.id})">名変</button>
-                    <button class="btn-sm" style="background:var(--danger)" onclick="remove(${acc.id})">削除</button>
+                    <button class="btn-edit" onclick="rename(${acc.id})">名変</button>
+                    <button class="btn-delete" onclick="remove(${acc.id})">削除</button>
                 </td>
             `;
             body.appendChild(tr);
-            loadAssets(acc);
+            fetchBalances(acc);
         });
     }
 
-    async function loadAssets(acc) {
+    async function fetchBalances(acc) {
         try {
-            const res = await fetch(`https://horizon.stellar.org/accounts/${acc.addr}`);
+            const res = await fetch(`https://horizon.stellar.org/accounts/${acc.address}`);
             const data = await res.json();
             const container = document.getElementById(`assets-${acc.id}`);
             container.innerHTML = '';
-            
-            const listDiv = document.createElement('div');
-            listDiv.className = 'asset-list-container';
 
             let totalJpy = 0;
-            const combined = {};
+            const list = document.createElement('div');
+            list.className = 'asset-list';
 
-            // 重複統合ロジック
-            for (const b of data.balances.filter(x => parseFloat(x.balance) > 0)) {
-                const isNative = b.asset_type === 'native';
-                const code = isNative ? 'XLM' : b.asset_code;
-                const amt = parseFloat(b.balance);
-                const rate = isNative ? 1 : await getDexRate(code, b.asset_issuer);
-                const jpy = amt * rate * xlmJpy;
+            // 残高がある通貨のみフィルタリング
+            const activeBalances = data.balances.filter(b => parseFloat(b.balance) > 0);
 
-                if (combined[code]) {
-                    combined[code].amt += amt;
-                    combined[code].jpy += jpy;
-                } else {
-                    combined[code] = { amt, jpy };
-                }
-            }
-
-            for (const code in combined) {
-                const asset = combined[code];
-                if (asset.jpy === 0 && asset.amt > 0) continue; // 価値なしトークンを飛ばす
-                totalJpy += asset.jpy;
+            activeBalances.forEach(b => {
+                const code = b.asset_type === 'native' ? 'XLM' : b.asset_code;
+                const amount = parseFloat(b.balance);
                 
                 const item = document.createElement('div');
                 item.className = 'asset-item';
-                item.innerHTML = `
-                    <div class="asset-code-amt">
-                        <span class="asset-code">${code}</span>
-                        <span class="asset-amt">${asset.amt.toLocaleString()}</span>
-                    </div>
-                    <span class="jpy-val">¥${Math.round(asset.jpy).toLocaleString()}</span>
-                `;
-                listDiv.appendChild(item);
+                
+                // 日本円換算 (※簡易的にXLMベースでの計算または、USDCなら150円固定などで計算)
+                // 本来は各トークンの価格が必要ですが、ここではXLMのみ換算し、USDCはドル円レートを想定
+                let jpyText = "";
+                if (code === 'XLM') {
+                    const jpy = amount * xlmToJpy;
+                    totalJpy += jpy;
+                    jpyText = `<span class="jpy-val">≈ ¥${Math.round(jpy).toLocaleString()}</span>`;
+                } else if (code === 'USDC') {
+                    const jpy = amount * 150; // 簡易レート
+                    totalJpy += jpy;
+                    jpyText = `<span class="jpy-val">≈ ¥${Math.round(jpy).toLocaleString()}</span>`;
+                }
+
+                item.innerHTML = `<div><span class="asset-code">${code}</span> ${amount.toLocaleString()}</div>${jpyText}`;
+                list.appendChild(item);
+            });
+
+            container.appendChild(list);
+            if (totalJpy > 0) {
+                const totalDiv = document.createElement('div');
+                totalDiv.className = 'total-jpy';
+                totalDiv.innerHTML = `合計目安: ¥${Math.round(totalJpy).toLocaleString()}`;
+                container.appendChild(totalDiv);
             }
-            container.appendChild(listDiv);
-            container.innerHTML += `<div class="total-box">合計評価額: ¥${Math.round(totalJpy).toLocaleString()}</div>`;
-        } catch (e) { document.getElementById(`assets-${acc.id}`).innerText = "データなし"; }
+
+        } catch (e) {
+            document.getElementById(`assets-${acc.id}`).innerText = "データなし/エラー";
+        }
     }
 
-    window.rename = (id) => {
-        const acc = accounts.find(x => x.id === id);
-        const n = prompt("名前を変更:", acc.name);
-        if(n) { acc.name = n; localStorage.setItem('xlm_pro_data', JSON.stringify(accounts)); render(); }
-    };
-    window.remove = (id) => {
-        if(confirm("このアドレスを削除しますか？")) {
-            accounts = accounts.filter(x => x.id !== id);
-            localStorage.setItem('xlm_pro_data', JSON.stringify(accounts));
-            render();
+    function rename(id) {
+        const acc = accounts.find(a => a.id === id);
+        const n = prompt("名前変更", acc.name);
+        if (n) { acc.name = n; save(); }
+    }
+
+    function remove(id) {
+        if (confirm("削除しますか？")) {
+            accounts = accounts.filter(a => a.id !== id);
+            save();
         }
-    };
+    }
 </script>
 </body>
 </html>
