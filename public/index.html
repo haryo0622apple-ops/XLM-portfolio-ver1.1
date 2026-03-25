@@ -3,227 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stellar Multi-Asset Tracker Universal</title>
+    <title>Stellar Auto-Price Tracker</title>
     <style>
-        :root { --primary: #0070f3; --danger: #ff4d4d; --success: #00c853; --dark: #2c3e50; }
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 1200px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        :root { --primary: #0070f3; --success: #00c853; --dark: #2c3e50; }
+        body { font-family: sans-serif; background: #f0f4f8; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 15px; shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        header { border-bottom: 2px solid #eee; margin-bottom: 20px; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .price-badge { background: #eef2f7; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9em; }
         
-        header { border-bottom: 2px solid #eee; margin-bottom: 20px; padding-bottom: 15px; }
-        h1 { margin: 0 0 15px 0; font-size: 22px; display: flex; align-items: center; gap: 10px; }
-        
-        /* レート管理エリア */
-        .rates-container { background: #eef2f7; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
-        .rates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
-        .rate-card { background: white; padding: 8px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .rate-card label { display: block; font-size: 0.75em; color: #666; font-weight: bold; margin-bottom: 4px; }
-        .rate-card input { width: 90%; border: 1px solid #ddd; border-radius: 4px; padding: 4px; font-weight: bold; color: var(--primary); }
-        .auto-tag { font-size: 0.7em; background: var(--primary); color: white; padding: 2px 6px; border-radius: 10px; margin-left: 5px; }
+        .form-section { display: flex; gap: 10px; margin-bottom: 25px; }
+        input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
+        button { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; background: var(--primary); color: white; }
 
-        /* 入力フォーム */
-        .form-section { display: flex; gap: 10px; margin-bottom: 25px; background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #eee; }
-        input[type="text"] { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
-        button { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn-add { background: var(--primary); color: white; }
-
-        /* テーブル */
         table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 15px; background: #fafafa; border-bottom: 2px solid #eee; color: #666; font-size: 12px; }
+        th { text-align: left; padding: 12px; background: #fafafa; border-bottom: 2px solid #eee; font-size: 12px; color: #666; }
         td { padding: 15px; border-bottom: 1px solid #eee; vertical-align: top; }
 
-        .asset-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eee; align-items: center; }
-        .asset-code { font-weight: 800; color: var(--dark); background: #f0f0f0; padding: 2px 6px; border-radius: 4px; min-width: 50px; text-align: center; }
-        .asset-amt { font-family: 'Courier New', monospace; font-weight: bold; flex-grow: 1; margin-left: 15px; }
-        .jpy-val { font-weight: bold; color: #555; }
-        .total-box { margin-top: 15px; text-align: right; color: var(--success); font-weight: 900; font-size: 1.3em; background: #fafffa; padding: 10px; border-radius: 8px; }
-        
-        .btn-sm { padding: 6px 12px; font-size: 11px; border-radius: 5px; margin-left: 5px; }
-        .btn-edit { background: #ffc107; }
-        .btn-del { background: var(--danger); color: white; }
+        .asset-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #eee; font-size: 0.9em; }
+        .asset-code { font-weight: bold; color: var(--primary); width: 60px; }
+        .jpy-val { font-weight: bold; color: #444; }
+        .total-box { margin-top: 10px; text-align: right; color: var(--success); font-weight: bold; font-size: 1.2em; }
+        .loading-text { color: #aaa; font-style: italic; font-size: 0.8em; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>🚀 Stellar 全通貨・日本円換算マネージャー</h1>
-        <div class="rates-container">
-            <div style="font-size: 0.8em; margin-bottom: 10px; font-weight: bold; color: #555;">💰 レート設定（1枚あたりの日本円）</div>
-            <div id="ratesGrid" class="rates-grid">
-                <div class="rate-card">
-                    <label>XLM <span class="auto-tag">自動取得</span></label>
-                    <div id="xlmRateDisplay" style="font-size: 1.1em; font-weight: bold; padding: 4px 0;">--- 円</div>
-                </div>
-            </div>
-        </div>
+        <h1>🚀 Stellar 全自動資産査定</h1>
+        <div id="xlmPrice" class="price-badge">XLM: 読み込み中...</div>
     </header>
 
     <div class="form-section">
-        <input type="text" id="labelInput" placeholder="名前 (例: GitHubで見つけた大口)">
-        <input type="text" id="addressInput" placeholder="Stellarアドレス (G...)">
-        <button class="btn-add" onclick="addNewAccount()">監視リストに追加</button>
+        <input type="text" id="labelInput" placeholder="ラベル名">
+        <input type="text" id="addrInput" placeholder="Stellarアドレス (G...)">
+        <button onclick="addAddr()">追加</button>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th style="width: 15%;">ラベル</th>
-                <th style="width: 25%;">アドレス</th>
-                <th style="width: 45%;">保有資産 & 日本円換算</th>
-                <th style="width: 15%;">操作</th>
+                <th style="width: 20%;">ラベル</th>
+                <th style="width: 55%;">保有資産 (自動換算済)</th>
+                <th style="width: 25%;">操作</th>
             </tr>
         </thead>
-        <tbody id="mainTableBody"></tbody>
+        <tbody id="listBody"></tbody>
     </table>
 </div>
 
 <script>
-    let watchList = JSON.parse(localStorage.getItem('stellar_watch_v6')) || [];
-    let xlmPriceJPY = 0;
-    
-    // 全通貨のレートを一括管理 (デフォルト値)
-    let customRates = JSON.parse(localStorage.getItem('stellar_rates_v6')) || {
-        USDC: 150,
-        SSLX: 4.5,
-        VELO: 1.2,
-        SHX: 0.15
-    };
+    let watchList = JSON.parse(localStorage.getItem('stellar_auto_v1')) || [];
+    let xlmJpy = 0;
 
     async function init() {
         await fetchXLMPrice();
-        renderRatesGrid();
-        renderTable();
-        setInterval(fetchXLMPrice, 300000); // 5分更新
+        render();
+        setInterval(fetchXLMPrice, 300000); 
     }
 
     async function fetchXLMPrice() {
         try {
             const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=stellar&vs_currencies=jpy');
             const data = await res.json();
-            xlmPriceJPY = data.stellar.jpy;
-            document.getElementById('xlmRateDisplay').innerText = xlmPriceJPY.toLocaleString() + " 円";
-            renderTable();
-        } catch (e) { console.error("XLM価格取得失敗"); }
+            xlmJpy = data.stellar.jpy;
+            document.getElementById('xlmPrice').innerText = `1 XLM = ¥${xlmJpy.toLocaleString()}`;
+            render();
+        } catch (e) { console.error("Price error"); }
     }
 
-    // レート入力パネルを動的に生成
-    function renderRatesGrid() {
-        const grid = document.getElementById('ratesGrid');
-        // XLM以外の既存カードを削除して再生成
-        const cards = grid.querySelectorAll('.rate-card:not(:first-child)');
-        cards.forEach(c => c.remove());
-
-        Object.keys(customRates).sort().forEach(code => {
-            const card = document.createElement('div');
-            card.className = 'rate-card';
-            card.innerHTML = `
-                <label>${code} (円)</label>
-                <input type="number" value="${customRates[code]}" step="0.0001" onchange="updateSingleRate('${code}', this.value)">
-            `;
-            grid.appendChild(card);
-        });
+    // ★重要: 各通貨の対XLM価格をDEXから取得する関数
+    async function getAssetPriceInXLM(code, issuer) {
+        if (!code || !issuer) return 0;
+        try {
+            // Stellar DEXの注文板を参照して、1トークンが何XLMかを取得
+            const url = `https://horizon.stellar.org/order_book?selling_asset_type=credit_alphanum4&selling_asset_code=${code}&selling_asset_issuer=${issuer}&buying_asset_type=native&limit=1`;
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data.bids && data.bids.length > 0) {
+                return parseFloat(data.bids[0].price); // 最良気配値を返す
+            }
+            return 0;
+        } catch (e) { return 0; }
     }
 
-    function updateSingleRate(code, value) {
-        customRates[code] = parseFloat(value) || 0;
-        localStorage.setItem('stellar_rates_v6', JSON.stringify(customRates));
-        renderTable();
+    function addAddr() {
+        const l = document.getElementById('labelInput').value || "無題";
+        const a = document.getElementById('addrInput').value.trim();
+        if(!a.startsWith('G')) return;
+        watchList.push({ id: Date.now(), name: l, address: a });
+        localStorage.setItem('stellar_auto_v1', JSON.stringify(watchList));
+        render();
     }
 
-    function addNewAccount() {
-        const label = document.getElementById('labelInput').value || "無題";
-        const addr = document.getElementById('addressInput').value.trim();
-        if (!addr.startsWith('G')) return alert("正しいアドレスを入力してください");
-
-        watchList.push({ id: Date.now(), name: label, address: addr });
-        saveData();
-        document.getElementById('labelInput').value = '';
-        document.getElementById('addressInput').value = '';
-    }
-
-    function saveData() {
-        localStorage.setItem('stellar_watch_v6', JSON.stringify(watchList));
-        renderTable();
-    }
-
-    function renderTable() {
-        const tbody = document.getElementById('mainTableBody');
-        tbody.innerHTML = '';
+    function render() {
+        const body = document.getElementById('listBody');
+        body.innerHTML = '';
         watchList.forEach(item => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong>${item.name}</strong></td>
-                <td><small style="word-break:break-all; color:#999; font-size:10px;">${item.address}</small></td>
-                <td id="assets-${item.id}"><span style="color:#ccc">取得中...</span></td>
+                <td><strong>${item.name}</strong><br><small style="color:#999; font-size:9px;">${item.address.substring(0,15)}...</small></td>
+                <td id="assets-${item.id}"><span class="loading-text">計算中...</span></td>
                 <td>
-                    <button class="btn-sm btn-edit" onclick="rename(${item.id})">名変</button>
-                    <button class="btn-sm btn-del" onclick="remove(${item.id})">削除</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-            loadAccountData(item);
-        });
-    }
-
-    async function loadAccountData(item) {
-        try {
-            const res = await fetch(`https://horizon.stellar.org/accounts/${item.address}`);
-            const data = await res.json();
-            const container = document.getElementById(`assets-${item.id}`);
-            container.innerHTML = '';
-
-            let totalAccJPY = 0;
-            const balances = data.balances.filter(b => parseFloat(b.balance) > 0);
-
-            balances.forEach(b => {
-                const code = b.asset_type === 'native' ? 'XLM' : b.asset_code;
-                const amt = parseFloat(b.balance);
-                
-                // 新しい通貨を見つけたらレート管理リストに追加
-                if (code !== 'XLM' && customRates[code] === undefined) {
-                    customRates[code] = 0;
-                    localStorage.setItem('stellar_rates_v6', JSON.stringify(customRates));
-                    renderRatesGrid();
-                }
-
-                let jpy = (code === 'XLM') ? amt * xlmPriceJPY : amt * (customRates[code] || 0);
-                totalAccJPY += jpy;
-
-                const row = document.createElement('div');
-                row.className = 'asset-row';
-                row.innerHTML = `
-                    <span class="asset-code">${code}</span>
-                    <span class="asset-amt">${amt.toLocaleString()}</span>
-                    <span class="jpy-val">¥${Math.round(jpy).toLocaleString()}</span>
-                `;
-                container.appendChild(row);
-            });
-
-            const totalDiv = document.createElement('div');
-            totalDiv.className = 'total-box';
-            totalDiv.innerText = `合計評価額 ¥${Math.round(totalAccJPY).toLocaleString()}`;
-            container.appendChild(totalDiv);
-
-        } catch (e) {
-            document.getElementById(`assets-${item.id}`).innerText = "データなし";
-        }
-    }
-
-    function rename(id) {
-        const acc = watchList.find(a => a.id === id);
-        const n = prompt("新しい名前", acc.name);
-        if (n) { acc.name = n; saveData(); }
-    }
-
-    function remove(id) {
-        if (confirm("削除しますか？")) {
-            watchList = watchList.filter(a => a.id !== id);
-            saveData();
-        }
-    }
-
-    init();
-</script>
-
-</body>
-</html>
+                    <button style="background:#ffc107; color:black; padding:5px 10px;" onclick="rename(${item.id})">名変</button>
+                    <button style="background:#dc3545; padding:5px 10px;" onclick="remove(${item.id})">削除</button>
