@@ -3,67 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stellar Asset Tracker - Hybrid</title>
+    <title>Stellar Tracker - Optimized Memo</title>
     <style>
         :root {
             --primary: #0070f3; --success: #00c853; --danger: #ff4d4f; --edit: #f5a623;
             --bg: #f8fafc; --text: #1e293b; --sub: #64748b;
         }
-        
         * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 20px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 1150px; margin: 0 auto; background: #fff; border-radius: 20px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
 
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; flex-wrap: wrap; gap: 10px; }
         h1 { font-size: 22px; margin: 0; }
-        .badge-group { display: flex; gap: 8px; }
         .badge { background: #f1f5f9; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.8em; color: var(--primary); border: 1px solid #e2e8f0; }
 
         .form-group { display: grid; grid-template-columns: 1fr 2fr auto; gap: 10px; margin-bottom: 30px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; }
         input { padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; width: 100%; }
-        .btn-add { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 0 25px; font-weight: 700; cursor: pointer; height: 100%; min-height: 45px; }
+        .btn-add { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 0 25px; font-weight: 700; cursor: pointer; min-height: 45px; }
 
-        /* PCテーブル形式 */
         table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 12px; color: var(--sub); font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; letter-spacing: 1px; }
-        tr { transition: transform 0.4s ease; }
+        th { text-align: left; padding: 12px; color: var(--sub); font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; }
         td { padding: 18px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
 
-        .acc-name { font-weight: 700; font-size: 1.05em; display: block; color: var(--text); }
-        .acc-addr { font-family: monospace; font-size: 10px; color: var(--sub); background: #f1f5f9; padding: 2px 4px; border-radius: 4px; display: inline-block; margin-top: 4px; }
+        /* アカウント名とメモを横に並べる設定 */
+        .acc-info { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .acc-name { font-weight: 700; font-size: 1.1em; color: var(--primary); white-space: nowrap; }
+        
+        .memo-input { 
+            flex: 1; min-width: 150px; border: 1px solid #e2e8f0; border-radius: 6px; 
+            padding: 4px 8px; font-size: 12px; background: #fffdf0; color: #5d4037;
+            transition: 0.2s;
+        }
+        .memo-input:focus { outline: none; border-color: var(--edit); background: #fff; box-shadow: 0 0 0 2px rgba(245, 166, 35, 0.1); }
 
-        .asset-container { display: flex; flex-direction: column; gap: 6px; }
+        .acc-addr { font-family: monospace; font-size: 10px; color: var(--sub); background: #f1f5f9; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 6px; }
+
         .asset-card {
             display: flex; justify-content: space-between; align-items: center;
-            background: #fff; padding: 8px 12px; border-radius: 8px; border: 1px solid #e2e8f0;
+            background: #fff; padding: 8px 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 5px;
         }
-        .asset-code {
-            font-weight: 800; font-size: 0.75em; padding: 4px 8px; border-radius: 4px;
-            min-width: 65px; text-align: center; background: #eff6ff; color: var(--primary); border: 1px solid #dbeafe;
-        }
-        .asset-amt { font-family: 'Roboto Mono', monospace; font-weight: 600; font-size: 0.9em; margin-left: 10px; }
-        .asset-jpy { font-weight: 700; color: var(--text); font-size: 0.95em; }
-
-        .total-row { text-align: right; font-weight: 800; color: var(--success); font-size: 1.1em; margin-top: 10px; padding-top: 5px; border-top: 1px dashed #eee; }
+        .asset-code { font-weight: 800; font-size: 0.75em; padding: 4px 8px; border-radius: 4px; background: #eff6ff; color: var(--primary); min-width: 60px; text-align: center; }
+        .total-row { text-align: right; font-weight: 800; color: var(--success); font-size: 1.1em; margin-top: 10px; border-top: 1px dashed #eee; padding-top: 5px; }
 
         .actions { display: flex; flex-direction: column; gap: 5px; }
-        .btn-action { padding: 8px; border: none; border-radius: 6px; color: white; font-size: 11px; font-weight: 700; cursor: pointer; width: 100%; }
+        .btn-action { padding: 8px; border: none; border-radius: 6px; color: white; font-size: 11px; font-weight: 700; cursor: pointer; }
 
-        /* スマホ用レスポンシブ設定 */
         @media (max-width: 768px) {
-            body { padding: 10px; }
-            .container { padding: 15px; border-radius: 15px; }
-            header { flex-direction: column; align-items: center; }
             .form-group { grid-template-columns: 1fr; }
-            
-            /* テーブルをカード形式に変更 */
             thead { display: none; }
             tr { display: block; margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 15px; padding: 15px; background: #fff; }
             td { display: block; border: none; padding: 8px 0; width: 100% !important; }
             
+            /* スマホではメモを下に回して横幅いっぱいにする */
+            .acc-info { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .memo-input { width: 100%; font-size: 14px; padding: 10px; }
+            
             .actions { flex-direction: row; gap: 10px; margin-top: 10px; }
-            .btn-action { padding: 15px; font-size: 14px; } /* スマホはボタンをデカく */
-            .acc-addr { word-break: break-all; }
+            .btn-action { flex: 1; padding: 15px; font-size: 14px; }
         }
     </style>
 </head>
@@ -79,7 +75,7 @@
     </header>
 
     <div class="form-group">
-        <input type="text" id="nameInput" placeholder="名前 (例: メイン)" autocomplete="off">
+        <input type="text" id="nameInput" placeholder="アカウント名" autocomplete="off">
         <input type="text" id="addrInput" placeholder="アドレス (G...)" autocomplete="off">
         <button class="btn-add" onclick="addAccount()">追加</button>
     </div>
@@ -87,8 +83,8 @@
     <table>
         <thead>
             <tr>
-                <th style="width: 25%;">ACCOUNT</th>
-                <th style="width: 60%;">PORTFOLIO (低い順)</th>
+                <th style="width: 35%;">ACCOUNT & MEMO</th>
+                <th style="width: 50%;">PORTFOLIO (低い順)</th>
                 <th style="width: 15%;">ACTIONS</th>
             </tr>
         </thead>
@@ -97,14 +93,13 @@
 </div>
 
 <script>
-    let accounts = JSON.parse(localStorage.getItem('stellar_hybrid_v1')) || [];
+    let accounts = JSON.parse(localStorage.getItem('stellar_memo_v2')) || [];
     let xlmJpy = 0;
     let usdJpy = 0;
     let accountTotals = {};
 
     window.onload = async () => {
         await fetchPrices();
-        render();
         setInterval(fetchPrices, 300000);
     };
 
@@ -131,9 +126,9 @@
 
     function addAccount() {
         const n = document.getElementById('nameInput'), a = document.getElementById('addrInput');
-        if(!a.value.trim().startsWith('G')) return alert("Gから始まるアドレスを！");
-        accounts.push({ id: Date.now(), name: n.value || "未設定", addr: a.value.trim() });
-        localStorage.setItem('stellar_hybrid_v1', JSON.stringify(accounts));
+        if(!a.value.trim().startsWith('G')) return alert("有効なアドレスを！");
+        accounts.push({ id: Date.now(), name: n.value || "未設定", addr: a.value.trim(), memo: "" });
+        save();
         n.value = ''; a.value = '';
         render();
     }
@@ -146,10 +141,14 @@
             tr.id = `row-${acc.id}`;
             tr.innerHTML = `
                 <td>
-                    <span class="acc-name">${acc.name}</span>
+                    <div class="acc-info">
+                        <span class="acc-name">${acc.name}</span>
+                        <input type="text" class="memo-input" placeholder="メモ..." 
+                               value="${acc.memo || ''}" onchange="updateMemo(${acc.id}, this.value)">
+                    </div>
                     <span class="acc-addr">${acc.addr.substring(0,10)}...${acc.addr.slice(-6)}</span>
                 </td>
-                <td id="assets-${acc.id}"><span style="color:#cbd5e1; font-size:12px;">同期中...</span></td>
+                <td id="assets-${acc.id}"><span style="color:#cbd5e1; font-size:12px;">計算中...</span></td>
                 <td>
                     <div class="actions">
                         <button class="btn-action" style="background:var(--edit)" onclick="renameAcc(${acc.id})">変更</button>
@@ -180,15 +179,12 @@
             }
 
             container.innerHTML = '';
-            const wrapper = document.createElement('div');
-            wrapper.className = 'asset-container';
             for (const code in combined) {
                 const asset = combined[code];
                 total += asset.jpy;
                 if (asset.jpy < 0.1 && !['XLM', 'USDC', 'STARDUST', 'SDUST'].includes(code)) continue;
-                wrapper.innerHTML += `<div class="asset-card"><div><span class="asset-code">${code}</span><span class="asset-amt">${asset.amt.toLocaleString()}</span></div><span class="asset-jpy">¥${Math.round(asset.jpy).toLocaleString()}</span></div>`;
+                container.innerHTML += `<div class="asset-card"><div><span class="asset-code">${code}</span><span class="asset-amt">${asset.amt.toLocaleString()}</span></div><span class="asset-jpy">¥${Math.round(asset.jpy).toLocaleString()}</span></div>`;
             }
-            container.appendChild(wrapper);
             container.innerHTML += `<div class="total-row">Total: ¥${Math.round(total).toLocaleString()}</div>`;
             accountTotals[acc.id] = total;
             sortRows();
@@ -202,19 +198,26 @@
         rows.forEach(row => list.appendChild(row));
     }
 
+    window.updateMemo = (id, text) => {
+        const acc = accounts.find(x => x.id === id);
+        if(acc) { acc.memo = text; save(); }
+    };
+
     window.renameAcc = (id) => {
         const acc = accounts.find(x => x.id === id);
         const n = prompt("名前変更", acc.name);
-        if(n) { acc.name = n; localStorage.setItem('stellar_hybrid_v1', JSON.stringify(accounts)); render(); }
+        if(n) { acc.name = n; save(); render(); }
     };
+
     window.removeAcc = (id) => {
         if(confirm("削除しますか？")) {
             accounts = accounts.filter(x => x.id !== id);
             delete accountTotals[id];
-            localStorage.setItem('stellar_hybrid_v1', JSON.stringify(accounts));
-            render();
+            save(); render();
         }
     };
+
+    function save() { localStorage.setItem('stellar_memo_v2', JSON.stringify(accounts)); }
 </script>
 </body>
 </html>
